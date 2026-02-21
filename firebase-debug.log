@@ -1,0 +1,210 @@
+[debug] [2026-02-09T19:36:46.808Z] ----------------------------------------------------------------------
+[debug] [2026-02-09T19:36:46.809Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\thant\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2026-02-09T19:36:46.810Z] CLI Version:   12.9.1
+[debug] [2026-02-09T19:36:46.810Z] Platform:      win32
+[debug] [2026-02-09T19:36:46.810Z] Node Version:  v16.20.2
+[debug] [2026-02-09T19:36:46.811Z] Time:          Tue Feb 10 2026 02:06:46 GMT+0630 (Myanmar Time)
+[debug] [2026-02-09T19:36:46.811Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-09T19:36:46.813Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-02-09T19:36:46.866Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-09T19:36:46.866Z] > authorizing via signed-in user (mm.itworld@gmail.com)
+[debug] [2026-02-09T19:36:46.867Z] [iam] checking project calculator-d2ba8 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-02-09T19:36:46.867Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/calculator-d2ba8:testIamPermissions [none]
+[debug] [2026-02-09T19:36:46.867Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/calculator-d2ba8:testIamPermissions x-goog-quota-user=projects/calculator-d2ba8
+[debug] [2026-02-09T19:36:46.867Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/calculator-d2ba8:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-09T19:36:48.045Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/calculator-d2ba8:testIamPermissions 200
+[debug] [2026-02-09T19:36:48.045Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/calculator-d2ba8:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-09T19:36:48.045Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/calculator-d2ba8/serviceAccounts/calculator-d2ba8@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-02-09T19:36:48.045Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/calculator-d2ba8/serviceAccounts/calculator-d2ba8@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-02-09T19:36:48.919Z] *** [apiv2] error from fetch(https://firebase-public.firebaseio.com/cli.json, {"headers":{},"method":"GET"}): FetchError: request to https://firebase-public.firebaseio.com/cli.json failed, reason: connect ECONNREFUSED 35.201.97.85:443
+[warn] !  Unable to fetch the CLI MOTD and remote config. 
+[debug] [2026-02-09T19:36:48.920Z] Failed to fetch MOTD FirebaseError: Failed to make request to https://firebase-public.firebaseio.com/cli.json
+[debug] [2026-02-09T19:36:49.540Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/calculator-d2ba8/serviceAccounts/calculator-d2ba8@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-02-09T19:36:49.540Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/calculator-d2ba8/serviceAccounts/calculator-d2ba8@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'calculator-d2ba8'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-02-09T19:36:49.545Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8 [none]
+[debug] [2026-02-09T19:36:50.169Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8 200
+[debug] [2026-02-09T19:36:50.170Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8 {"projectId":"calculator-d2ba8","projectNumber":"1089632803632","displayName":"Calculator","name":"projects/calculator-d2ba8","resources":{"hostingSite":"calculator-d2ba8"},"state":"ACTIVE","etag":"1_57a27a4b-a079-4460-96de-8409b0d2756e"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-02-09T19:36:50.174Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-02-09T19:36:50.174Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/calculator-d2ba8
+[debug] [2026-02-09T19:36:50.177Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/runtimeconfig.googleapis.com [none]
+[debug] [2026-02-09T19:36:50.177Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/calculator-d2ba8
+[debug] [2026-02-09T19:36:50.178Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudbuild.googleapis.com [none]
+[debug] [2026-02-09T19:36:50.178Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudbuild.googleapis.com x-goog-quota-user=projects/calculator-d2ba8
+[debug] [2026-02-09T19:36:50.179Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/artifactregistry.googleapis.com [none]
+[debug] [2026-02-09T19:36:50.179Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/artifactregistry.googleapis.com x-goog-quota-user=projects/calculator-d2ba8
+[debug] [2026-02-09T19:36:51.630Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/runtimeconfig.googleapis.com 200
+[debug] [2026-02-09T19:36:51.630Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2026-02-09T19:36:51.631Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudfunctions.googleapis.com 200
+[debug] [2026-02-09T19:36:51.631Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudfunctions.googleapis.com [omitted]
+[info] +  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2026-02-09T19:36:51.658Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/artifactregistry.googleapis.com 200
+[debug] [2026-02-09T19:36:51.658Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/artifactregistry.googleapis.com [omitted]
+[info] +  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2026-02-09T19:36:51.674Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudbuild.googleapis.com 200
+[debug] [2026-02-09T19:36:51.675Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/calculator-d2ba8/services/cloudbuild.googleapis.com [omitted]
+[info] +  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2026-02-09T19:36:51.675Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8/adminSdkConfig [none]
+[debug] [2026-02-09T19:36:52.128Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8/adminSdkConfig 200
+[debug] [2026-02-09T19:36:52.129Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8/adminSdkConfig {"projectId":"calculator-d2ba8","storageBucket":"calculator-d2ba8.firebasestorage.app"}
+[debug] [2026-02-09T19:36:52.130Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/calculator-d2ba8/configs [none]
+[debug] [2026-02-09T19:36:52.586Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/calculator-d2ba8/configs 200
+[debug] [2026-02-09T19:36:52.586Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/calculator-d2ba8/configs {}
+[debug] [2026-02-09T19:36:52.589Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-09T19:36:53.633Z] > [functions] package.json contents: {
+  "name": "functions",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "16"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.4.1",
+    "@google-cloud/firestore": "^6.8.0"
+  }
+}
+[debug] [2026-02-09T19:36:53.634Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-02-09T19:36:53.634Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-09T19:36:53.640Z] Found firebase-functions binary at 'D:\ITCom\Projects\Android\23AdminMMO\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8699
+
+[debug] [2026-02-09T19:36:53.947Z] Got response from /__/functions.yaml {"endpoints":{"onChatMessageCreate":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"eventTrigger":{"eventType":"providers/cloud.firestore/eventTypes/document.create","eventFilters":{"resource":"projects/calculator-d2ba8/databases/(default)/documents/chats/{chatId}/messages/{messageId}"},"retry":false},"labels":{},"entryPoint":"onChatMessageCreate"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged D:\ITCom\Projects\Android\23AdminMMO\functions (69.19 KB) for uploading 
+[debug] [2026-02-09T19:36:53.987Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/-/functions [none]
+[debug] [2026-02-09T19:36:54.805Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/-/functions 200
+[debug] [2026-02-09T19:36:54.805Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/-/functions {}
+[debug] [2026-02-09T19:36:54.808Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/calculator-d2ba8/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-02-09T19:36:56.495Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/calculator-d2ba8/locations/-/functions 200
+[debug] [2026-02-09T19:36:56.496Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/calculator-d2ba8/locations/-/functions {}
+[debug] [2026-02-09T19:36:56.499Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8 [none]
+[debug] [2026-02-09T19:36:56.918Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8 200
+[debug] [2026-02-09T19:36:56.918Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/calculator-d2ba8 {"projectId":"calculator-d2ba8","projectNumber":"1089632803632","displayName":"Calculator","name":"projects/calculator-d2ba8","resources":{"hostingSite":"calculator-d2ba8"},"state":"ACTIVE","etag":"1_57a27a4b-a079-4460-96de-8409b0d2756e"}
+[debug] [2026-02-09T19:36:56.921Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2026-02-09T19:36:56.922Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions:generateUploadUrl {}
+[debug] [2026-02-09T19:37:05.358Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2026-02-09T19:37:05.358Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/uploads-159645095952.us-central1.cloudfunctions.appspot.com/bc1e03c9-953b-4aca-a8b0-48621223b278.zip?GoogleAccessId=service-1089632803632@gcf-admin-robot.iam.gserviceaccount.com&Expires=1770667632&Signature=aA0c0EioHpiFmbTS%2BibY2GLcSSbVPQ0dJe0hyDkQvf1qQWyUb0TVuz3mV8%2FKNI8pml9Ta2KZlU3H2uXiaqAUHQn7Z%2BGWJohhgm0GM%2BFMd6355TVV03fZYSknKKLf47qN87UKZthF5CgKTLMYoxvXsunnQUjmvCa%2Fp03FqkTVMVTPqG2ZcsJSnptcaxpePdTngD8XV2fQl%2B9xkq0yt%2FGocpNDktnBtVmFlu5frAtVZbwM%2ByuJ3Gfe37kXWv3bm1e79SXqXUut9PWe0%2FnZAqzNUjDIEsGnE3%2FCrZSj1q96kpeqzTEAGwB4EwcLhEYqKY%2B9Xe7nzDLGFUwKAEHT906yDQ%3D%3D"}
+[debug] [2026-02-09T19:37:05.359Z] >>> [apiv2][query] PUT https://storage.googleapis.com/uploads-159645095952.us-central1.cloudfunctions.appspot.com/bc1e03c9-953b-4aca-a8b0-48621223b278.zip GoogleAccessId=service-1089632803632%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1770667632&Signature=aA0c0EioHpiFmbTS%2BibY2GLcSSbVPQ0dJe0hyDkQvf1qQWyUb0TVuz3mV8%2FKNI8pml9Ta2KZlU3H2uXiaqAUHQn7Z%2BGWJohhgm0GM%2BFMd6355TVV03fZYSknKKLf47qN87UKZthF5CgKTLMYoxvXsunnQUjmvCa%2Fp03FqkTVMVTPqG2ZcsJSnptcaxpePdTngD8XV2fQl%2B9xkq0yt%2FGocpNDktnBtVmFlu5frAtVZbwM%2ByuJ3Gfe37kXWv3bm1e79SXqXUut9PWe0%2FnZAqzNUjDIEsGnE3%2FCrZSj1q96kpeqzTEAGwB4EwcLhEYqKY%2B9Xe7nzDLGFUwKAEHT906yDQ%3D%3D
+[debug] [2026-02-09T19:37:05.359Z] >>> [apiv2][body] PUT https://storage.googleapis.com/uploads-159645095952.us-central1.cloudfunctions.appspot.com/bc1e03c9-953b-4aca-a8b0-48621223b278.zip [stream]
+[debug] [2026-02-09T19:37:07.195Z] <<< [apiv2][status] PUT https://storage.googleapis.com/uploads-159645095952.us-central1.cloudfunctions.appspot.com/bc1e03c9-953b-4aca-a8b0-48621223b278.zip 200
+[debug] [2026-02-09T19:37:07.195Z] <<< [apiv2][body] PUT https://storage.googleapis.com/uploads-159645095952.us-central1.cloudfunctions.appspot.com/bc1e03c9-953b-4aca-a8b0-48621223b278.zip [omitted]
+[info] +  functions: functions folder uploaded successfully 
+[info] i  functions: creating Node.js 16 (1st Gen) function onChatMessageCreate(us-central1)... 
+[debug] [2026-02-09T19:37:07.202Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions [none]
+[debug] [2026-02-09T19:37:07.202Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions {"name":"projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate","sourceUploadUrl":"https://storage.googleapis.com/uploads-159645095952.us-central1.cloudfunctions.appspot.com/bc1e03c9-953b-4aca-a8b0-48621223b278.zip?GoogleAccessId=service-1089632803632@gcf-admin-robot.iam.gserviceaccount.com&Expires=1770667632&Signature=aA0c0EioHpiFmbTS%2BibY2GLcSSbVPQ0dJe0hyDkQvf1qQWyUb0TVuz3mV8%2FKNI8pml9Ta2KZlU3H2uXiaqAUHQn7Z%2BGWJohhgm0GM%2BFMd6355TVV03fZYSknKKLf47qN87UKZthF5CgKTLMYoxvXsunnQUjmvCa%2Fp03FqkTVMVTPqG2ZcsJSnptcaxpePdTngD8XV2fQl%2B9xkq0yt%2FGocpNDktnBtVmFlu5frAtVZbwM%2ByuJ3Gfe37kXWv3bm1e79SXqXUut9PWe0%2FnZAqzNUjDIEsGnE3%2FCrZSj1q96kpeqzTEAGwB4EwcLhEYqKY%2B9Xe7nzDLGFUwKAEHT906yDQ%3D%3D","entryPoint":"onChatMessageCreate","runtime":"nodejs16","dockerRegistry":"ARTIFACT_REGISTRY","labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"895acd08168bc92b74a2807d329518472143a790"},"eventTrigger":{"eventType":"providers/cloud.firestore/eventTypes/document.create","resource":"projects/calculator-d2ba8/databases/(default)/documents/chats/{chatId}/messages/{messageId}"},"minInstances":null,"maxInstances":null,"ingressSettings":null,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"calculator-d2ba8\",\"storageBucket\":\"calculator-d2ba8.firebasestorage.app\"}","GCLOUD_PROJECT":"calculator-d2ba8","EVENTARC_CLOUD_EVENT_SOURCE":"projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate"},"serviceAccountEmail":null,"availableMemoryMb":null,"timeout":null,"vpcConnector":null,"vpcConnectorEgressSettings":null,"buildEnvironmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}}
+[debug] [2026-02-09T19:37:07.912Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions 400
+[debug] [2026-02-09T19:37:07.913Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/calculator-d2ba8/locations/us-central1/functions {"error":{"code":400,"message":"Failed to create 1st Gen function projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate: runtime: Runtime validation errors: [error_code: \t DEPLOYS_NOT_ALLOWED\nmessage: \"Runtime nodejs16 is decommissioned and no longer allowed. Please use the latest Node.js runtime for Cloud Functions.\"\n]","status":"INVALID_ARGUMENT"}}
+[warn] !  functions: failed to create function projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate 
+[error] Failed to create function projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate
+[debug] [2026-02-09T19:37:07.922Z] Total Function Deployment time: 717
+[debug] [2026-02-09T19:37:07.922Z] 1 Functions Deployed
+[debug] [2026-02-09T19:37:07.922Z] 1 Functions Errored
+[debug] [2026-02-09T19:37:07.923Z] 0 Function Deployments Aborted
+[debug] [2026-02-09T19:37:07.923Z] Average Function Deployment time: 716
+[info] 
+[info] Functions deploy had errors with the following functions:
+	onChatMessageCreate(us-central1)
+[info] i  functions: cleaning up build files... 
+[debug] [2026-02-09T19:37:08.144Z] >>> [apiv2][query] DELETE https://artifactregistry.googleapis.com/v1beta2/projects/calculator-d2ba8/locations/us-central1/repositories/gcf-artifacts/packages/on_chat_message_create [none]
+[debug] [2026-02-09T19:37:08.145Z] >>> [apiv2][query] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list [none]
+[debug] [2026-02-09T19:37:09.675Z] <<< [apiv2][status] DELETE https://artifactregistry.googleapis.com/v1beta2/projects/calculator-d2ba8/locations/us-central1/repositories/gcf-artifacts/packages/on_chat_message_create 404
+[debug] [2026-02-09T19:37:09.675Z] <<< [apiv2][body] DELETE https://artifactregistry.googleapis.com/v1beta2/projects/calculator-d2ba8/locations/us-central1/repositories/gcf-artifacts/packages/on_chat_message_create {"error":{"code":404,"message":"Package \"projects/calculator-d2ba8/locations/us-central1/repositories/gcf-artifacts/packages/on_chat_message_create\" was not found.","status":"NOT_FOUND"}}
+[debug] [2026-02-09T19:37:10.520Z] <<< [apiv2][status] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list 404
+[debug] [2026-02-09T19:37:10.521Z] <<< [apiv2][body] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list {"errors":[{"code":"NAME_UNKNOWN","message":"Repository \"us.gcr.io\" not found"}]}
+[debug] [2026-02-09T19:37:10.521Z] Failed docker command with error  HTTP Error: 404, Not Found {"name":"FirebaseError","children":[],"context":{"body":{"errors":[{"code":"NAME_UNKNOWN","message":"Repository \"us.gcr.io\" not found"}],"error":{"message":"Not Found"}},"response":{"statusCode":404}},"exit":1,"message":"HTTP Error: 404, Not Found","status":404}
+[debug] [2026-02-09T19:37:10.526Z] >>> [apiv2][query] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list [none]
+[debug] [2026-02-09T19:37:11.063Z] <<< [apiv2][status] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list 404
+[debug] [2026-02-09T19:37:11.063Z] <<< [apiv2][body] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list {"errors":[{"code":"NAME_UNKNOWN","message":"Repository \"us.gcr.io\" not found"}]}
+[debug] [2026-02-09T19:37:11.064Z] Failed docker command with error  HTTP Error: 404, Not Found {"name":"FirebaseError","children":[],"context":{"body":{"errors":[{"code":"NAME_UNKNOWN","message":"Repository \"us.gcr.io\" not found"}],"error":{"message":"Not Found"}},"response":{"statusCode":404}},"exit":1,"message":"HTTP Error: 404, Not Found","status":404}
+[debug] [2026-02-09T19:37:11.165Z] >>> [apiv2][query] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list [none]
+[debug] [2026-02-09T19:37:11.680Z] <<< [apiv2][status] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list 404
+[debug] [2026-02-09T19:37:11.681Z] <<< [apiv2][body] GET https://us.gcr.io/v2/calculator-d2ba8/gcf/us-central1/tags/list {"errors":[{"code":"NAME_UNKNOWN","message":"Repository \"us.gcr.io\" not found"}]}
+[debug] [2026-02-09T19:37:11.681Z] Failed docker command with error  HTTP Error: 404, Not Found {"name":"FirebaseError","children":[],"context":{"body":{"errors":[{"code":"NAME_UNKNOWN","message":"Repository \"us.gcr.io\" not found"}],"error":{"message":"Not Found"}},"response":{"statusCode":404}},"exit":1,"message":"HTTP Error: 404, Not Found","status":404}
+[warn] !  functions: Unhandled error cleaning up build images. This could result in a small monthly bill if not corrected. You can attempt to delete these images by redeploying or you can delete them manually at https://console.cloud.google.com/gcr/images/calculator-d2ba8/us/gcf 
+[debug] [2026-02-09T19:37:11.682Z] Functions deploy failed.
+[debug] [2026-02-09T19:37:11.682Z] {
+  "endpoint": {
+    "id": "onChatMessageCreate",
+    "project": "calculator-d2ba8",
+    "region": "us-central1",
+    "entryPoint": "onChatMessageCreate",
+    "platform": "gcfv1",
+    "runtime": "nodejs16",
+    "eventTrigger": {
+      "eventType": "providers/cloud.firestore/eventTypes/document.create",
+      "retry": false,
+      "eventFilters": {
+        "resource": "projects/calculator-d2ba8/databases/(default)/documents/chats/{chatId}/messages/{messageId}"
+      }
+    },
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "serviceAccount": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"calculator-d2ba8\",\"storageBucket\":\"calculator-d2ba8.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "calculator-d2ba8",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate"
+    },
+    "codebase": "default",
+    "targetedByOnly": false,
+    "hash": "895acd08168bc92b74a2807d329518472143a790"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "function": "projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate"
+    },
+    "exit": 1,
+    "message": "Failed to create function projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate",
+    "original": {
+      "name": "FirebaseError",
+      "children": [],
+      "context": {
+        "body": {
+          "error": {
+            "code": 400,
+            "message": "Failed to create 1st Gen function projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate: runtime: Runtime validation errors: [error_code: \t DEPLOYS_NOT_ALLOWED\nmessage: \"Runtime nodejs16 is decommissioned and no longer allowed. Please use the latest Node.js runtime for Cloud Functions.\"\n]",
+            "status": "INVALID_ARGUMENT"
+          }
+        },
+        "response": {
+          "statusCode": 400
+        }
+      },
+      "exit": 1,
+      "message": "HTTP Error: 400, Failed to create 1st Gen function projects/calculator-d2ba8/locations/us-central1/functions/onChatMessageCreate: runtime: Runtime validation errors: [error_code: \t DEPLOYS_NOT_ALLOWED\nmessage: \"Runtime nodejs16 is decommissioned and no longer allowed. Please use the latest Node.js runtime for Cloud Functions.\"\n]",
+      "status": 400
+    },
+    "status": 400,
+    "code": 400
+  }
+}
+[debug] [2026-02-09T19:37:11.868Z] Error: Failed to create function onChatMessageCreate in region us-central1
+    at C:\Users\thant\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:51:11
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async Fabricator.createV1Function (C:\Users\thant\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:181:32)
+    at async Fabricator.createEndpoint (C:\Users\thant\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:133:13)
+    at async handle (C:\Users\thant\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:88:17)
+[error] 
+[error] Error: There was an error deploying functions

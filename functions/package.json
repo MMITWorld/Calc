@@ -1,0 +1,13 @@
+{
+  "name": "functions",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "16"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.4.1",
+    "@google-cloud/firestore": "^6.8.0"
+  }
+}
