@@ -39,7 +39,7 @@ let liveBtnTxt='Telegram Channel'
 //TZT 
 let liveBtnUrl='https://t.me/itwsoftware'//'https://play.google.com/store/apps/details?id=com.gstd'
 //TZT Update Version
-export const CURRENT_VERSION = '2.0.4'
+export const CURRENT_VERSION = '2.0.5'
 import messaging from '@react-native-firebase/messaging';
 class Home extends Component {
     constructor(props) {
