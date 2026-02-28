@@ -18,7 +18,8 @@ import {
     Keyboard,
     AsyncStorage,
     Clipboard,
-    Share
+    Share,
+    DeviceEventEmitter
 } from 'react-native';
 import dal from '../dal.js'
 import radio_btn_selected from '../assets/images/radio_btn_selected.png'
@@ -138,6 +139,14 @@ export default class Users extends Component {
             plusCommission: '',
             plusCombineType: 'sale',
             plusCombineLoadingTarget: '',
+            showAssistantLedgerByUserModal: false,
+            assistantLedgerRows: [],
+            assistantLedgerTotalUnit: 0,
+            assistantLedgerUserNo: '',
+            assistantLedgerTermDetailName: '',
+            assistantLedgerLoading: false,
+            assistantLedgerSortKey: 'unit',
+            assistantLedgerSortOrder: 'desc',
         };
         this._layoutProvider = new LayoutProvider(
             index => {
@@ -153,6 +162,9 @@ export default class Users extends Component {
     }
     componentWillUnmount() {
         //this.willFocusListener.remove()
+        if (this.assistantBreakLedgerListener && this.assistantBreakLedgerListener.remove) {
+            this.assistantBreakLedgerListener.remove()
+        }
     }
     async componentDidMount() {
         console.log(this.props.navigation.state.params.termdetailsid)
@@ -190,6 +202,12 @@ export default class Users extends Component {
         })
         this.APITermDetailByDate()
         this.getAgents()
+        this.assistantBreakLedgerListener = DeviceEventEmitter.addListener(
+            'assistant_break_open_ledger_by_user',
+            (payload) => {
+                this.openAssistantLedgerListByUser(payload)
+            }
+        )
     }
 
     save3DTimePref(date) {
@@ -988,6 +1006,118 @@ APISlipDetailTime(TermDetailID, Num) {
                 }
             }
         })
+    }
+    toNumber(v) {
+        if (v === null || v === undefined || v === '') return 0
+        const n = parseFloat(String(v).replace(/,/g, ''))
+        return isNaN(n) ? 0 : n
+    }
+    inferLottTypeFromText(txt) {
+        const s = String(txt || '').toUpperCase()
+        if (s.indexOf('3D') !== -1) return '3D'
+        if (s.indexOf('2D') !== -1) return '2D'
+        return ''
+    }
+    openAssistantLedgerListByUser(payload) {
+        const p = payload || {}
+        const userID = String(p.userID || '').trim()
+        const userNo = String(p.userNo || 'All')
+        const termDetailID = String(p.termDetailID || this.state.termId || this.props.navigation.state.params.termdetailsid || 'All')
+        const termDetailName = String(p.termDetailName || '')
+        let lottType = String(p.lottType || '').trim()
+        if (!lottType) {
+            lottType = this.inferLottTypeFromText(termDetailName)
+        }
+        if (!lottType && termDetailID && termDetailID !== 'All') {
+            const t = (this.state.terms || []).find(x => String(x.TermDetailID || '') === String(termDetailID))
+            if (t) lottType = String(t.LottType || '')
+        }
+        if (!lottType) lottType = String(this.state.type || '2D')
+        if (!userID) {
+            Alert.alert(config.AppName, 'UserID not found')
+            return
+        }
+        this.setState({
+            assistantLedgerLoading: true,
+            showAssistantLedgerByUserModal: true,
+            assistantLedgerRows: [],
+            assistantLedgerTotalUnit: 0,
+            assistantLedgerUserNo: userNo,
+            assistantLedgerTermDetailName: termDetailName,
+        })
+        dal.getLedgerList(this.props.navigation.state.params.endpoint, termDetailID, lottType, userID, 'All', (err, resp) => {
+            if (err || !resp || !Array.isArray(resp.Data)) {
+                this.setState({ assistantLedgerLoading: false, showAssistantLedgerByUserModal: false })
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            const rows = resp.Data
+                .map((x) => ({
+                    num: x && x.Num != null ? String(x.Num) : '',
+                    unit: this.toNumber(x && x.Unit != null ? x.Unit : 0),
+                }))
+                .filter((r) => this.toNumber(r.unit) !== 0)
+            if (!rows.length) {
+                this.setState({ assistantLedgerLoading: false, showAssistantLedgerByUserModal: false })
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            const total = rows.reduce((s, r) => s + this.toNumber(r.unit), 0)
+            this.setState({
+                assistantLedgerLoading: false,
+                showAssistantLedgerByUserModal: true,
+                assistantLedgerRows: rows,
+                assistantLedgerTotalUnit: total,
+                assistantLedgerUserNo: userNo,
+                assistantLedgerTermDetailName: termDetailName,
+                assistantLedgerSortKey: 'unit',
+                assistantLedgerSortOrder: 'desc',
+            })
+        })
+    }
+    toggleAssistantLedgerSort(key) {
+        this.setState((prev) => {
+            if (prev.assistantLedgerSortKey === key) {
+                return { assistantLedgerSortOrder: prev.assistantLedgerSortOrder === 'asc' ? 'desc' : 'asc' }
+            }
+            return { assistantLedgerSortKey: key, assistantLedgerSortOrder: 'asc' }
+        })
+    }
+    getAssistantLedgerSortedRows() {
+        const rows = Array.isArray(this.state.assistantLedgerRows) ? this.state.assistantLedgerRows.slice() : []
+        const key = this.state.assistantLedgerSortKey === 'num' ? 'num' : 'unit'
+        const order = this.state.assistantLedgerSortOrder === 'desc' ? -1 : 1
+        rows.sort((a, b) => {
+            const av = key === 'num' ? this.toNumber(a && a.num) : this.toNumber(a && a.unit)
+            const bv = key === 'num' ? this.toNumber(b && b.num) : this.toNumber(b && b.unit)
+            if (av < bv) return -1 * order
+            if (av > bv) return 1 * order
+            return 0
+        })
+        return rows
+    }
+    buildAssistantLedgerShareText() {
+        const rows = this.getAssistantLedgerSortedRows()
+        if (!rows.length) return ''
+        const lines = []
+        lines.push(`Ledger=${this.state.assistantLedgerUserNo || 'All'}`)
+        if (this.state.assistantLedgerTermDetailName) {
+            lines.push(String(this.state.assistantLedgerTermDetailName))
+        }
+        rows.forEach((r) => {
+            lines.push(`${r.num}=${String(this.toNumber(r.unit))}`)
+        })
+        lines.push(`Total=${String(this.toNumber(this.state.assistantLedgerTotalUnit))}`)
+        return lines.join('\n')
+    }
+    shareAssistantLedgerText() {
+        const msg = this.buildAssistantLedgerShareText()
+        if (!msg) {
+            Alert.alert(config.AppName, 'No Data!')
+            return
+        }
+        Clipboard.setString(msg)
+        Share.share({ message: msg })
     }
     dynamicsort(property, order) {
         var sort_order = 1;
@@ -1835,6 +1965,51 @@ APISlipDetailTime(TermDetailID, Num) {
                         //     Alert.alert(config.AppName,'No Extra Numbers!')
                         //     return;
                         // }
+                        const openCombineModalWithUsers = (usersData) => {
+                            const preferredUserId =
+                                this.state.userNo && this.state.userNo !== 'NoUser'
+                                    ? this.state.userNo
+                                    : (this.state.__userId ? this.state.__userId : 'NoUser');
+                            const selectedIdx = usersData.findIndex(x => x.UserID == preferredUserId);
+                            const nextUserState = selectedIdx !== -1
+                                ? {
+                                    userNo: preferredUserId,
+                                    userId: usersData[selectedIdx].UserNo,
+                                    discount2D: usersData[selectedIdx].Discount2D,
+                                    discount3D: usersData[selectedIdx].Discount3D
+                                }
+                                : {
+                                    userNo: 'NoUser',
+                                    userId: 'NoUser',
+                                    discount2D: 0,
+                                    discount3D: 0
+                                };
+
+                            Clipboard.getString().then((clipText) => {
+                                this.setState({
+                                    users: usersData,
+                                    loading: false,
+                                    isCombineLdg: true,
+                                    bodyldg: clipText || '',
+                                    ...nextUserState
+                                })
+                            }).catch(() => {
+                                this.setState({
+                                    users: usersData,
+                                    loading: false,
+                                    isCombineLdg: true,
+                                    ...nextUserState
+                                })
+                            })
+                        };
+
+                        if (this.state.users && this.state.users.length) {
+                            this.setState({ loading: true }, () => {
+                                openCombineModalWithUsers(this.state.users);
+                            });
+                            return;
+                        }
+
                         this.setState({ loading: true })
                         dal.getUsers(this.props.navigation.state.params.endpoint, (err, resp) => {
                             if (err) {
@@ -1844,20 +2019,7 @@ APISlipDetailTime(TermDetailID, Num) {
                             } else {
                                 console.log(resp)
                                 if (resp && resp.Status == 'OK' && resp.Data.length) {
-                                    Clipboard.getString().then((clipText) => {
-                                        this.setState({
-                                            users: resp.Data,
-                                            loading: false,
-                                            isCombineLdg: true,
-                                            bodyldg: clipText || ''
-                                        })
-                                    }).catch(() => {
-                                        this.setState({
-                                            users: resp.Data,
-                                            loading: false,
-                                            isCombineLdg: true
-                                        })
-                                    })
+                                    openCombineModalWithUsers(resp.Data);
                                 } else {
                                     this.setState({
                                         users: [],
@@ -2048,6 +2210,72 @@ APISlipDetailTime(TermDetailID, Num) {
                 </View>
             )
         })
+    }
+    renderLedgerListByUserNo() {
+        return (
+            <Modal
+                transparent={true}
+                visible={this.state.showAssistantLedgerByUserModal}
+                onRequestClose={() => this.setState({ showAssistantLedgerByUserModal: false })}
+            >
+                <View style={{ flex: 1, backgroundColor: '#00000066', justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ width: width * 0.92, maxHeight: height * 0.85, backgroundColor: '#fff', borderRadius: 8, padding: 12 }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>
+                            {`Ledger - ${this.state.assistantLedgerUserNo || 'All'}`}
+                        </Text>
+                        <Text style={{ fontSize: 13, color: '#333', marginBottom: 8 }}>
+                            {this.state.assistantLedgerTermDetailName || ''}
+                        </Text>
+                        {this.state.assistantLedgerLoading && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                <ActivityIndicator size='small' color={Color.PRIMARYCOLOR} />
+                                <Text style={{ marginLeft: 6, fontSize: 12, color: '#333', fontWeight: 'bold' }}>Loading...</Text>
+                            </View>
+                        )}
+                        <View style={{ flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderColor: '#ddd' }}>
+                            <TouchableOpacity style={{ width: width * 0.35 }} onPress={() => this.toggleAssistantLedgerSort('num')}>
+                                <Text style={{ width: width * 0.35, fontWeight: 'bold', fontSize: 14 }}>
+                                    {`Num ${this.state.assistantLedgerSortKey === 'num' ? (this.state.assistantLedgerSortOrder === 'asc' ? '↑' : '↓') : ''}`}
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={{ width: width * 0.35, alignItems: 'flex-end' }} onPress={() => this.toggleAssistantLedgerSort('unit')}>
+                                <Text style={{ width: width * 0.35, fontWeight: 'bold', fontSize: 14, textAlign: 'right' }}>
+                                    {`Unit ${this.state.assistantLedgerSortKey === 'unit' ? (this.state.assistantLedgerSortOrder === 'asc' ? '↑' : '↓') : ''}`}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={{ maxHeight: height * 0.5 }}>
+                            {this.getAssistantLedgerSortedRows().map((r, i) => (
+                                <View key={`alr_${i}`} style={{ flexDirection: 'row', paddingVertical: 7, borderBottomWidth: 1, borderColor: '#f0f0f0' }}>
+                                    <Text style={{ width: width * 0.35, fontSize: 14 }}>{r.num}</Text>
+                                    <Text style={{ width: width * 0.35, fontSize: 14, textAlign: 'right' }}>{numeral(r.unit).format('0,0')}</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                        <View style={{ flexDirection: 'row', marginTop: 8, borderTopWidth: 1, borderColor: '#ddd', paddingTop: 6 }}>
+                            <Text style={{ width: width * 0.35, fontSize: 15, fontWeight: 'bold' }}>Total Unit</Text>
+                            <Text style={{ width: width * 0.35, fontSize: 15, fontWeight: 'bold', textAlign: 'right' }}>
+                                {numeral(this.state.assistantLedgerTotalUnit).format('0,0')}
+                            </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                            <TouchableOpacity
+                                style={{ flex: 1, height: 40, backgroundColor: '#999', borderRadius: 5, alignItems: 'center', justifyContent: 'center' }}
+                                onPress={() => this.setState({ showAssistantLedgerByUserModal: false })}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>CLOSE</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ flex: 1, height: 40, backgroundColor: Color.PRIMARYCOLOR, borderRadius: 5, alignItems: 'center', justifyContent: 'center', marginLeft: 8 }}
+                                onPress={() => this.shareAssistantLedgerText()}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>SHARE</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        )
     }
     renderHotModal() {
         return (
@@ -3344,10 +3572,7 @@ APISlipDetailTime(TermDetailID, Num) {
                 visible={this.state.isCombineLdg}
                 onRequestClose={() => {
                     this.setState({
-                        isCombineLdg: false,
-                        users: [],
-                        buyType: 'm',
-                        userNo: 'NoUser'
+                        isCombineLdg: false
                     })
                 }}
             >
@@ -3583,20 +3808,14 @@ APISlipDetailTime(TermDetailID, Num) {
                                                 this.setState({
                                                     loading: false,
                                                     isCombineLdg: false,
-                                                    users: [],
-                                                    bodyldg: '',
-                                                    buyType: 'm',
-                                                    userNo: 'NoUser'
+                                                    bodyldg: ''
                                                 })
                                                 this.getLedgerList(this.state.type)
                                             } else {
                                                 Alert.alert(config.AppName, resp)
                                                 this.setState({
                                                     loading: false,
-                                                    isCombineLdg: false,
-                                                    users: [],
-                                                    buyType: 'm',
-                                                    userNo: 'NoUser'
+                                                    isCombineLdg: false
                                                 })
                                             }
                                         })
@@ -3622,7 +3841,7 @@ APISlipDetailTime(TermDetailID, Num) {
                                         loading: true
                                     })
 
-                                    dal.checkSMS(this.props.navigation.state.params.endpoint, this.state.userNo, this.state.termId, this.state.bodyldg, (err, resp) => {
+                                    dal.checkSMS(this.props.navigation.state.params.endpoint, this.state.userNo, this.state.termId,this.state.unitPrice, this.state.bodyldg, (err, resp) => {
                                         console.log("Resp " + JSON.stringify(resp))
                                         console.log("Err " + err)
                                         if (resp.length > 0) {
@@ -3674,10 +3893,7 @@ APISlipDetailTime(TermDetailID, Num) {
                                                 this.setState({
                                                     loading: false,
                                                     isCombineLdg: false,
-                                                    users: [],
                                                     bodyldg: '',
-                                                    buyType: 'm',
-                                                    userNo: 'NoUser',
                                                     errorMsg: ''
                                                 })
                                                 this.getLedgerList(this.state.type)
@@ -3686,9 +3902,6 @@ APISlipDetailTime(TermDetailID, Num) {
                                                 this.setState({
                                                     loading: false,
                                                     isCombineLdg: false,
-                                                    users: [],
-                                                    buyType: 'm',
-                                                    userNo: 'NoUser',
                                                     errorMsg: ''
                                                 })
                                             }
@@ -4825,6 +5038,7 @@ APISlipDetailTime(TermDetailID, Num) {
                     />
                 </View>
                 {this.renderButtons()}
+                {this.renderLedgerListByUserNo()}
                 {this.renderHotModal()}
                 {this.renderLoginModal()}
                 {this.renderBuyModal()}

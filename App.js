@@ -35,9 +35,11 @@ class App extends Component {
     }
   }
   componentDidMount(){
-    this.syncCodePush()
-    codePush.allowRestart();
-    codePush.notifyAppReady();
+    if (!__DEV__) {
+      this.syncCodePush();
+      codePush.allowRestart();
+      codePush.notifyAppReady();
+    }
   }
   syncCodePush(){
     codePush.sync(options);
@@ -48,5 +50,7 @@ class App extends Component {
     );
   }
 }
-App = codePush(options)(App);
+if (!__DEV__) {
+  App = codePush(options)(App);
+}
 export default App;

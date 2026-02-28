@@ -1100,10 +1100,17 @@ APISlipDetail(TermDetailID, Num) {
                     console.warn("TermDetailID"+this.props.navigation.state.params.termdetailsid)
                     console.warn("PasteText"+this.state.pasteTxt)
                     this.setState({ loading: true }, () => {
+                      const selectedUnitPrice =
+                                this.state.combineAmountType == '25'
+                                  ? 25
+                                  : this.state.combineAmountType == '100'
+                                    ? 100
+                                    : 1;
                       dal.checkSMS(
                         this.props.navigation.state.params.endpoint,
                         uid,
                         this.props.navigation.state.params.termdetailsid,
+                        selectedUnitPrice,
                         this.state.pasteTxt,
                         (err, resp) => {
                           console.log('Resp ' + JSON.stringify(resp));
@@ -1156,10 +1163,17 @@ APISlipDetail(TermDetailID, Num) {
                         return;
                       }
                       this.setState({ loading: true }, () => {
+                        const selectedUnitPrice =
+                                this.state.combineAmountType == '25'
+                                  ? 25
+                                  : this.state.combineAmountType == '100'
+                                    ? 100
+                                    : 1;
                         dal.checkSMS(
                           this.props.navigation.state.params.endpoint,
                           this.state.userid,
                           this.props.navigation.state.params.termdetailsid,
+                          selectedUnitPrice,
                           this.state.pasteTxt,
                           (err, resp) => {
                             console.log('Resp ' + JSON.stringify(resp));
@@ -1191,10 +1205,8 @@ APISlipDetail(TermDetailID, Num) {
                               // 1) Change Unit from API reply first
                               const normalized = (resp || []).map((value) => {
                                 const rawUnit = toNum(value.Unit);
-                                // API unit is already normalized by current unitPrice.
-                                // Rebuild source amount first, then apply selected unit price.
-                                const sourceAmount = rawUnit * unitPrice;
-                                const convertedUnit = (sourceAmount * selectedUnitPrice) / unitPrice;
+                                console.warn("RAWUNIT=======>"+rawUnit)
+                                const convertedUnit =rawUnit; 
                                 return {
                                   ...value,
                                   Unit: Number.isInteger(convertedUnit)
@@ -2760,7 +2772,16 @@ _onPickUser = (userId) => {
                             const right = (parts.slice(1).join('=') || '').trim();
                             return /\d/.test(left) && /\d/.test(right);
                           });
-                        const alertNums = onlyNums.join('\n').trim();
+                        const alertNums = onlyNums
+                          .map((l) => {
+                            const idx = l.indexOf('=');
+                            if (idx < 0) return l;
+                            const left = l.slice(0, idx).trim();
+                            const right = l.slice(idx + 1).trim();
+                            return `${left}==>${right}`;
+                          })
+                          .join('\n')
+                          .trim();
                         const finalMessage = alertNums
                           ? `${sharedata} \t ............ \nAmount=${total}\n\n!မရ!\n${alertNums}`
                           : `${sharedata} \t ............ \nAmount=${total}`;
@@ -2771,9 +2792,9 @@ _onPickUser = (userId) => {
                           {
                             // Android only:
                             dialogTitle:
-                              this.state.lg == "uni"
-                                ? "á€…á€¬á€•á€­á€¯á€·á€›á€”á€º"
-                                : "á€…á€¬á€•á€­á€¯á‚”á€›á€”á€¹",
+                                this.state.lg == "uni"
+                                  ? "စာပို့ရန်"
+                                  : "စာပို႔ရန္",
                           }
                         );
                       } else {

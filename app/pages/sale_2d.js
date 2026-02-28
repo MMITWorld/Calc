@@ -566,7 +566,16 @@ constructor(props) {
                               const right = (parts.slice(1).join('=') || '').trim();
                               return /\d/.test(left) && /\d/.test(right);
                             });
-                          const alertNums = onlyNums.join('\n').trim();
+                          const alertNums = onlyNums
+                            .map((l) => {
+                              const idx = l.indexOf('=');
+                              if (idx < 0) return l;
+                              const left = l.slice(0, idx).trim();
+                              const right = l.slice(idx + 1).trim();
+                              return `${left}==>${right}`;
+                            })
+                            .join('\n')
+                            .trim();
                           const finalMessage = alertNums
                             ? `${sharedata} \t ............ \nAmount=${total}\n\n!မရ!\n${alertNums}`
                             : `${sharedata} \t ............ \nAmount=${total}`;
@@ -1317,10 +1326,17 @@ constructor(props) {
                   }
                   const uid = this.state.userid ?? this.state.selectedUserId ?? (this.props.navigation.state.params.user && this.props.navigation.state.params.user[0]?.UserID);
                   this.setState({ loading: true }, () => {
+                    const selectedUnitPrice =
+                                this.state.combineAmountType == '25'
+                                  ? 25
+                                  : this.state.combineAmountType == '100'
+                                    ? 100
+                                    : 1;
                     dal.checkSMS(
                       this.props.navigation.state.params.endpoint,
                       uid,
                       this.props.navigation.state.params.termdetailsid,
+                      selectedUnitPrice,
                       this.state.pasteTxt,
                       (err, resp) => {
                         console.log('Resp ' + JSON.stringify(resp));
@@ -1373,10 +1389,17 @@ constructor(props) {
                       return;
                     }
                     this.setState({ loading: true });
+                    const selectedUnitPrice =
+                                this.state.combineAmountType == '25'
+                                  ? 25
+                                  : this.state.combineAmountType == '100'
+                                    ? 100
+                                    : 1;
                     dal.checkSMS(
                       this.props.navigation.state.params.endpoint,
                       this.state.userid,
                       this.props.navigation.state.params.termdetailsid,
+                      selectedUnitPrice,
                       this.state.pasteTxt,
                       (err, resp) => {
                         console.log('Resp ' + JSON.stringify(resp));
@@ -1406,10 +1429,7 @@ constructor(props) {
                                 : 1;
                           const normalized = (resp || []).map((value) => {
                             const rawUnit = toNum(value.Unit);
-                            // API unit is already normalized by current unitPrice.
-                            // Rebuild source amount first, then apply selected unit price.
-                            const sourceAmount = rawUnit * unitPrice;
-                            const convertedUnit = (sourceAmount * selectedUnitPrice) / unitPrice;
+                            const convertedUnit = rawUnit;
                             return {
                               ...value,
                               Unit: Number.isInteger(convertedUnit)

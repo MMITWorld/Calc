@@ -15,6 +15,9 @@ module.exports = {
   },
 
   resolver: {
+    // RN 0.61 + older Metro can choke on ESM builds from some packages
+    // (e.g. @react-navigation/* lib/module). Prefer CommonJS entrypoints.
+    resolverMainFields: ['main', 'react-native', 'browser'],
     blacklistRE: blacklist([
       /android\/app\/build\/.*/,
       /android\/build\/.*/,

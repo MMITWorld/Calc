@@ -87,7 +87,17 @@ export default class Users extends Component {
             breakPData:[],
             breakPTotalUnit:0,
             breakPTotalWinUnit:0,
-            breakPTitle:''
+            breakPTitle:'',
+            breakPUserSearch:'',
+            assistantBreakHandledKey:'',
+            showLedgerByUserModal:false,
+            ledgerLoading:false,
+            ledgerRows:[],
+            ledgerTotalUnit:0,
+            ledgerUserNo:'',
+            ledgerTermDetailName:'',
+            ledgerSortKey:'unit',
+            ledgerSortOrder:'desc'
         };
         this._layoutProvider = new LayoutProvider(
             index => {
@@ -114,6 +124,54 @@ export default class Users extends Component {
             const lw = parseInt(v, 10);
             if (!isNaN(lw)) this.setState({ layoutWidth: lw });
         });
+        this.handleAssistantBreakAll();
+    }
+    componentDidUpdate(prevProps) {
+        const prevParams = (prevProps.navigation && prevProps.navigation.state && prevProps.navigation.state.params) || {}
+        const curParams = (this.props.navigation && this.props.navigation.state && this.props.navigation.state.params) || {}
+        if (prevParams.assistantBreakKey !== curParams.assistantBreakKey) {
+            this.handleAssistantBreakAll();
+        }
+    }
+    handleAssistantBreakAll() {
+        const params = (this.props.navigation && this.props.navigation.state && this.props.navigation.state.params) || {}
+        if (!params.assistantBreakAll) return
+        const key = String(params.assistantBreakKey || '')
+        if (key && key === this.state.assistantBreakHandledKey) return
+
+        const endpoint = params.endpoint
+        if (!endpoint) return
+        const termId = params.assistantTermID || 'All'
+        const termDetailID = params.assistantTermDetailID || 'All'
+        const customerName = params.assistantCustomerName || 'All'
+
+        this.setState({ loading: true, assistantBreakHandledKey: key })
+        dal.getBreakP(endpoint, termId, termDetailID, customerName, (err, resp) => {
+            this.setState({ loading: false })
+            if (err || !resp || resp.Status !== 'OK' || !Array.isArray(resp.Data)) {
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            const rows = resp.Data.map(v => this.normalizeBreakPRow(v))
+            if (!rows.length) {
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            let totalUnit = 0
+            let totalWinUnit = 0
+            rows.forEach((r) => {
+                totalUnit += r.totalUnit
+                totalWinUnit += r.totalWinUnit
+            })
+            this.setState({
+                breakPData: rows,
+                breakPTotalUnit: totalUnit,
+                breakPTotalWinUnit: totalWinUnit,
+                breakPTitle: `All => ${termId} => ${termDetailID}`,
+                breakPUserSearch: '',
+                showBreakPModal: true
+            })
+        })
     }
     buildRowShareMessage(data, useEnglish, isDetail) {
         if (!data) return ''
@@ -405,9 +463,13 @@ export default class Users extends Component {
                 for(let i=0;i<=resp.Data.length;i++){
                     console.log(i)
                     if(i==0){
-                        t.push({ value: 'all', label:"အားလုံး" })
+                        t.push({ value: 'all', label:"အားလုံး", lottType: '' })
                     }else{
-                        t.push({ value: resp.Data[i-1].TermDetailID, label: resp.Data[i-1].Name })
+                        t.push({
+                            value: resp.Data[i-1].TermDetailID,
+                            label: resp.Data[i-1].Name,
+                            lottType: resp.Data[i-1].LottType || ''
+                        })
                     }
                 }
                 console.log("t ",t)
@@ -906,6 +968,42 @@ export default class Users extends Component {
         const ampm = ap && ap[1] ? ap[1].toUpperCase() : ''
         return `${day}${ampm ? ' ' + ampm : ''}${win ? '(' + win + ')' : ''}`.trim()
     }
+    inferLottTypeFromText(txt) {
+        const s = String(txt || '').toUpperCase()
+        if (s.indexOf('3D') !== -1) return '3D'
+        if (s.indexOf('2D') !== -1) return '2D'
+        return ''
+    }
+    getLottTypeFromSelectedFileText() {
+        const byTerm = (this.state.terms || []).find(
+            (x) => String(x && x.TermID || '') === String(this.state.termId || '')
+        )
+        if (byTerm) {
+            const byTermType = String(byTerm.LottType || '').toUpperCase()
+            if (byTermType === '2D' || byTermType === '3D') return byTermType
+            const byTermName = this.inferLottTypeFromText(byTerm.Name || '')
+            if (byTermName) return byTermName
+        }
+        const byTermDetail = (this.state.termDetails || []).find(
+            (x) => String(x && x.value || '') === String(this.state.termDetailsId || '')
+        )
+        if (byTermDetail) {
+            const byType = String(byTermDetail.lottType || '').toUpperCase()
+            if (byType === '2D' || byType === '3D') return byType
+            const byLabel = this.inferLottTypeFromText(byTermDetail.label || '')
+            if (byLabel) return byLabel
+        }
+        const selectedText = String(this.state.termName || '').trim()
+        const fromTermName = this.inferLottTypeFromText(selectedText)
+        if (fromTermName) return fromTermName
+        if (Array.isArray(this.state.selectedTermDetails) && this.state.selectedTermDetails.length === 1) {
+            const one = this.state.selectedTermDetails[0] || {}
+            const oneText = String(one.label || one.value || '').trim()
+            const oneType = this.inferLottTypeFromText(oneText)
+            if (oneType) return oneType
+        }
+        return ''
+    }
     normalizeBreakPRow(r) {
         const rawName = r.TermDetailName || r.Name || ''
         const termDetailName = this.formatBreakDayLabel(rawName)
@@ -913,7 +1011,17 @@ export default class Users extends Component {
         const percentage = this.toNumber(r.Percentage || r.P)
         const breakVal = this.toNumber(r.Break || r.UnitBreak)
         const totalWinUnit = this.toNumber(r.TotalWinUnit || r.WinUnit || r.Prize || r.Win)
+        const userNo = String(r.UserNo || r.CustomerName || 'All').trim() || 'All'
+        const userID = String(r.UserID || r.UserId || r.UID || '').trim()
+        const termDetailID = String(r.TermDetailID || r.TermID || '').trim()
+        const inferredLottType = String(this.inferLottTypeFromText(rawName) || '').trim()
+        const lottType = String(inferredLottType || r.LottType || '').trim()
         return {
+            userID,
+            userNo,
+            termDetailID,
+            lottType,
+            originalTermDetailName: String(rawName || '').trim(),
             termDetailName,
             totalUnit,
             percentage,
@@ -921,21 +1029,183 @@ export default class Users extends Component {
             totalWinUnit
         }
     }
+    getBreakPGroups(rows) {
+        const list = Array.isArray(rows) ? rows : []
+        const map = {}
+        list.forEach((r) => {
+            const key = String(r.userNo || 'All').trim() || 'All'
+            if (!map[key]) map[key] = []
+            map[key].push(r)
+        })
+        return Object.keys(map).map((k) => ({ userNo: k, rows: map[k] }))
+    }
+    getFilteredBreakPGroups() {
+        const groups = this.getBreakPGroups(this.state.breakPData || [])
+        const key = String(this.state.breakPUserSearch || '').trim().toLowerCase()
+        if (!key) return groups
+        return groups.filter(g => String(g.userNo || '').toLowerCase().indexOf(key) !== -1)
+    }
     buildBreakPShareText() {
         const rows = this.state.breakPData || []
         if (!rows.length) return ''
-        const lines = rows.map((r) => {
-            const pTxt = `${numeral(r.totalUnit).format('0,0')}(${numeral(r.percentage).format('0,0')}%)`
-            return `${r.termDetailName}\nရောင်းကြေး(%)=${pTxt}\nဘရိတ်=${numeral(r.break).format('0,0')} ပေါက်သီး=${numeral(r.totalWinUnit).format('0,0')}`
+        const groups = this.getBreakPGroups(rows)
+        const lines = []
+        groups.forEach((g) => {
+            lines.push(`User: ${g.userNo}`)
+            g.rows.forEach((r) => {
+                const pTxt = `${numeral(r.totalUnit).format('0,0')}(${numeral(r.percentage).format('0,0')}%)`
+                lines.push(`${r.termDetailName}\nရောင်းကြေး(%)=${pTxt}\nဘရိတ်=${numeral(r.break).format('0,0')} ပေါက်သီး=${numeral(r.totalWinUnit).format('0,0')}`)
+            })
+            const gTotalUnit = g.rows.reduce((s, r) => s + this.toNumber(r.totalUnit), 0)
+            const gTotalWinUnit = g.rows.reduce((s, r) => s + this.toNumber(r.totalWinUnit), 0)
+            lines.push(`Sub Total  ${numeral(gTotalUnit).format('0,0')}  ${numeral(gTotalWinUnit).format('0,0')}`)
+            lines.push('')
         })
         lines.push('')
         lines.push(`Total  ${numeral(this.state.breakPTotalUnit).format('0,0')}  ${numeral(this.state.breakPTotalWinUnit).format('0,0')}`)
         return lines.join('\n\n')
     }
+    renderLedgerListByUserNo(row) {
+        const r = row || {}
+        const userID = String(r.userID || '').trim()
+        if (!userID) {
+            Alert.alert(config.AppName, 'UserID not found')
+            return
+        }
+        let selectedTermDetailID = ''
+        if (this.state.termDetailsId && this.state.termDetailsId != 'NoTermDetails' && this.state.termDetailsId != 'All' && this.state.termDetailsId != 'all') {
+            selectedTermDetailID = String(this.state.termDetailsId)
+        } else if (Array.isArray(this.state.selectedTermDetails) && this.state.selectedTermDetails.length === 1) {
+            const one = this.state.selectedTermDetails[0] || {}
+            const v = String(one.value || '')
+            if (v && v != 'all' && v != 'All') {
+                selectedTermDetailID = v
+            }
+        }
+        let termDetailID = String(selectedTermDetailID || r.termDetailID || '')
+        if (!termDetailID || termDetailID == 'All' || termDetailID == 'all') {
+            Alert.alert(config.AppName, 'Please select Term Detail first!')
+            return
+        }
+        let lottType = String(r.lottType || '').trim()
+        const rawName = String(r.originalTermDetailName || '').trim()
+        const termDetails = Array.isArray(this.state.termDetails) ? this.state.termDetails : []
+        const selectedFileType = String(this.getLottTypeFromSelectedFileText() || '').trim()
+        if (selectedFileType) {
+            lottType = selectedFileType
+        }
+        const inferredLottType = String(this.inferLottTypeFromText(rawName) || '').trim()
+        if (!lottType && inferredLottType) {
+            // Row text has explicit 2D/3D, use it as highest priority.
+            lottType = inferredLottType
+        }
+        if (!lottType) {
+            lottType = this.inferLottTypeFromText(rawName)
+        }
+        if (rawName) {
+            const byName = termDetails.find((t) => String(t && t.Name || '').trim() === rawName)
+            if (byName) {
+                if (!termDetailID || termDetailID === 'All') {
+                    termDetailID = String(byName.TermDetailID || termDetailID || 'All')
+                }
+                if (!lottType) {
+                    lottType = String(byName.LottType || '')
+                }
+            }
+        }
+        if (!lottType && termDetailID && termDetailID !== 'All') {
+            const byId = termDetails.find((t) => String(t && t.TermDetailID || '') === String(termDetailID))
+            if (byId) {
+                lottType = String(byId.LottType || '')
+            }
+        }
+        if (!lottType) {
+            lottType = String(this.state.type || '2D')
+        }
+        this.setState({
+            ledgerLoading: true,
+            showLedgerByUserModal: true,
+            ledgerRows: [],
+            ledgerTotalUnit: 0,
+            ledgerUserNo: String(r.userNo || 'All'),
+            ledgerTermDetailName: String(r.originalTermDetailName || ''),
+            ledgerSortKey: 'unit',
+            ledgerSortOrder: 'desc'
+        })
+        dal.getLedgerList(this.props.navigation.state.params.endpoint, termDetailID, lottType, userID, 'All', (err, resp) => {
+            if (err || !resp || !Array.isArray(resp.Data)) {
+                this.setState({ ledgerLoading: false, showLedgerByUserModal: false })
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            const rows = resp.Data
+                .map((x) => ({
+                    num: x && x.Num != null ? String(x.Num) : '',
+                    unit: this.toNumber(x && x.Unit != null ? x.Unit : 0),
+                }))
+                .filter((x) => this.toNumber(x.unit) !== 0)
+            if (!rows.length) {
+                this.setState({ ledgerLoading: false, showLedgerByUserModal: false })
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            const total = rows.reduce((s, x) => s + this.toNumber(x.unit), 0)
+            this.setState({
+                ledgerLoading: false,
+                showLedgerByUserModal: true,
+                ledgerRows: rows,
+                ledgerTotalUnit: total,
+            })
+        })
+    }
+    toggleLedgerSort(key) {
+        this.setState((prev) => {
+            if (prev.ledgerSortKey === key) {
+                return { ledgerSortOrder: prev.ledgerSortOrder === 'asc' ? 'desc' : 'asc' }
+            }
+            return { ledgerSortKey: key, ledgerSortOrder: 'asc' }
+        })
+    }
+    getSortedLedgerRows() {
+        const rows = Array.isArray(this.state.ledgerRows) ? this.state.ledgerRows.slice() : []
+        const key = this.state.ledgerSortKey === 'num' ? 'num' : 'unit'
+        const order = this.state.ledgerSortOrder === 'desc' ? -1 : 1
+        rows.sort((a, b) => {
+            const av = key === 'num' ? this.toNumber(a && a.num) : this.toNumber(a && a.unit)
+            const bv = key === 'num' ? this.toNumber(b && b.num) : this.toNumber(b && b.unit)
+            if (av < bv) return -1 * order
+            if (av > bv) return 1 * order
+            return 0
+        })
+        return rows
+    }
+    buildLedgerShareText() {
+        const rows = this.getSortedLedgerRows()
+        if (!rows.length) return ''
+        const lines = []
+        lines.push(`Ledger=${this.state.ledgerUserNo || 'All'}`)
+        if (this.state.ledgerTermDetailName) {
+            lines.push(String(this.state.ledgerTermDetailName))
+        }
+        rows.forEach((r) => {
+            lines.push(`${r.num}=${numeral(this.toNumber(r.unit)).format('0,0')}`)
+        })
+        lines.push(`Total=${numeral(this.toNumber(this.state.ledgerTotalUnit)).format('0,0')}`)
+        return lines.join('\n')
+    }
     fetchBreakP() {
         const row = this.state.rowShareData
         if (!row) return
-        const termId = this.state.termId || 'all'
+        const termId = (!this.state.termId || this.state.termId == 'NoTerm') ? 'all' : this.state.termId
+        let termDetailID = 'All'
+        if (this.state.termDetailsId && this.state.termDetailsId != 'NoTermDetails') {
+            termDetailID = this.state.termDetailsId
+        }
+        if (this.checkExists(this.state.selectedTermDetails, 'all') || this.state.selectedTermDetails.length == 0) {
+            termDetailID = 'All'
+        } else if (this.state.selectedTermDetails.length == 1) {
+            termDetailID = this.state.selectedTermDetails[0].value
+        }
         const customerName = row.CustomerName || row.UserNo || ''
         if (!customerName) {
             Alert.alert(config.AppName, 'No CustomerName')
@@ -945,7 +1215,7 @@ export default class Users extends Component {
         const termName = this.state.termId == 'all' ? 'All' : (termObj && termObj.Name ? termObj.Name : this.getTitle())
         const userNo = row.UserNo || customerName || ''
         this.setState({ loading: true })
-        dal.getBreakP(this.props.navigation.state.params.endpoint, termId, customerName, (err, resp) => {
+        dal.getBreakP(this.props.navigation.state.params.endpoint, termId, termDetailID, customerName, (err, resp) => {
             this.setState({ loading: false })
             if (err || !resp || resp.Status !== 'OK' || !Array.isArray(resp.Data)) {
                 Alert.alert(config.AppName, 'No Data!')
@@ -972,6 +1242,46 @@ export default class Users extends Component {
                 breakPTotalUnit: totalUnit,
                 breakPTotalWinUnit: totalWinUnit,
                 breakPTitle: `${userNo}${termName ? ' => ' + termName : ''}`,
+                breakPUserSearch: '',
+                showBreakPModal: true
+            })
+        })
+    }
+    fetchBreakPAllBySelectedUser() {
+        const selectedUser = (this.state.users || []).find(x => x.UserID == this.state.userId)
+        const customerName = this.state.userId == 'All'
+            ? 'All'
+            : (selectedUser ? (selectedUser.UserNo || selectedUser.CustomerName || 'All') : 'All')
+
+        const termId = (!this.state.termId || this.state.termId == 'NoTerm') ? 'all' : this.state.termId
+        const termName = this.state.termId == 'all'
+            ? 'All'
+            : ((this.state.terms || []).find(x => x.TermID == this.state.termId)?.Name || this.getTitle())
+
+        this.setState({ loading: true })
+        dal.getBreakP(this.props.navigation.state.params.endpoint, termId, 'All', customerName, (err, resp) => {
+            this.setState({ loading: false })
+            if (err || !resp || resp.Status !== 'OK' || !Array.isArray(resp.Data)) {
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            const rows = resp.Data.map(v => this.normalizeBreakPRow(v))
+            if (!rows.length) {
+                Alert.alert(config.AppName, 'No Data!')
+                return
+            }
+            let totalUnit = 0
+            let totalWinUnit = 0
+            rows.forEach((r) => {
+                totalUnit += r.totalUnit
+                totalWinUnit += r.totalWinUnit
+            })
+            this.setState({
+                breakPData: rows,
+                breakPTotalUnit: totalUnit,
+                breakPTotalWinUnit: totalWinUnit,
+                breakPTitle: `${customerName}${termName ? ' => ' + termName : ''} => All`,
+                breakPUserSearch: '',
                 showBreakPModal: true
             })
         })
@@ -1339,7 +1649,7 @@ export default class Users extends Component {
                                 paddingHorizontal:10,
                                 color:'#000',
                                 marginLeft:10,
-                                flex:0.2
+                                flex:0.4
                             }}
                             underlineColorAndroid="transparent"
                         />
@@ -1367,6 +1677,21 @@ export default class Users extends Component {
                             }}>
                                 တွတ်မပါ
                             </Text>
+                        <TouchableOpacity
+                            style={{
+                                marginLeft:8,
+                                height:30,
+                                paddingHorizontal:10,
+                                borderRadius:5,
+                                backgroundColor:Color.PRIMARYCOLOR,
+                                alignItems:'center',
+                                justifyContent:'center'
+                            }}
+                            onPress={() => this.fetchBreakPAllBySelectedUser()}>
+                            <Text style={{ color:'#fff', fontSize:12, fontWeight:'bold' }}>
+                                Break All
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -2484,6 +2809,22 @@ export default class Users extends Component {
                             <Text style={{ fontSize: 13, color: '#333', marginBottom: 8 }}>
                                 {this.state.breakPTitle || ''}
                             </Text>
+                            <TextInput
+                                style={{
+                                    height: 36,
+                                    borderWidth: 1,
+                                    borderColor: '#ddd',
+                                    borderRadius: 5,
+                                    paddingHorizontal: 10,
+                                    color: '#262626',
+                                    marginBottom: 8
+                                }}
+                                placeholder='အမည်ရှာရန်။'
+                                placeholderTextColor='#777'
+                                value={this.state.breakPUserSearch}
+                                onChangeText={(text) => this.setState({ breakPUserSearch: text })}
+                                underlineColorAndroid='transparent'
+                            />
                             <View style={{ flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderColor: '#ddd' }}>
                                 <Text style={{ width: width * 0.18, fontWeight: 'bold', fontSize: 12 }}>နေ့</Text>
                                 <Text style={{ width: width * 0.25, fontWeight: 'bold', fontSize: 12, textAlign: 'right' }}>ရောင်းကြေး(%)</Text>
@@ -2491,33 +2832,59 @@ export default class Users extends Component {
                                 <Text style={{ width: width * 0.18, fontWeight: 'bold', fontSize: 12, textAlign: 'right' }}>ပေါက်သီး</Text>
                             </View>
                             <ScrollView style={{ maxHeight: height * 0.56 }}>
-                                {(this.state.breakPData || []).map((item, idx) => (
-                                    <View key={`bp_${idx}`} style={{
-                                        flexDirection: 'row',
-                                        paddingVertical: 7,
-                                        borderBottomWidth: 1,
-                                        borderColor: '#f0f0f0',
-                                        backgroundColor: (() => {
-                                            const txt = String(item.termDetailName || '')
-                                            const day = txt.split(' ')[0]
-                                            const dayColors = {
-                                                Mon: '#FFF3E0',
-                                                Tue: '#E3F2FD',
-                                                Wed: '#FFF8E1',
-                                                Thu: '#FCE4EC',
-                                                Fri: '#E0F7FA',
-                                                Sat: '#F3E5F5',
-                                                Sun: '#FFF3E0',
-                                            }
-                                            return dayColors[day] || '#FFFFFF'
-                                        })(),
-                                    }}>
-                                        <Text style={{ width: width * 0.18, fontSize: 12 }}>{item.termDetailName}</Text>
-                                        <Text style={{ width: width * 0.25, fontSize: 12, textAlign: 'right' }}>
-                                            {`${numeral(item.totalUnit).format('0,0')}(${numeral(item.percentage).format('0,0')}%)`}
+                                {this.getFilteredBreakPGroups().map((g, gIdx) => (
+                                    <View key={`bpg_${gIdx}`}>
+                                        <Text style={{
+                                            fontSize: 12,
+                                            fontWeight: 'bold',
+                                            color: Color.PRIMARYCOLOR,
+                                            marginTop: gIdx === 0 ? 0 : 8,
+                                            marginBottom: 4
+                                        }}>
+                                            {`အမည်= ${g.userNo}`}
                                         </Text>
-                                        <Text style={{ width: width * 0.18, fontSize: 12, textAlign: 'right' }}>{numeral(item.break).format('0,0')}</Text>
-                                        <Text style={{ width: width * 0.18, fontSize: 12, textAlign: 'right' }}>{numeral(item.totalWinUnit).format('0,0')}</Text>
+                                        {g.rows.map((item, idx) => (
+                                            <TouchableOpacity key={`bp_${gIdx}_${idx}`} style={{
+                                                flexDirection: 'row',
+                                                paddingVertical: 7,
+                                                borderBottomWidth: 1,
+                                                borderColor: '#f0f0f0',
+                                                backgroundColor: (() => {
+                                                    const txt = String(item.termDetailName || '')
+                                                    const day = txt.split(' ')[0]
+                                                    const dayColors = {
+                                                        Mon: '#FFF3E0',
+                                                        Tue: '#E3F2FD',
+                                                        Wed: '#FFF8E1',
+                                                        Thu: '#FCE4EC',
+                                                        Fri: '#E0F7FA',
+                                                        Sat: '#F3E5F5',
+                                                        Sun: '#FFF3E0',
+                                                    }
+                                                    return dayColors[day] || '#FFFFFF'
+                                                })(),
+                                            }}
+                                                disabled={this.state.ledgerLoading}
+                                                onPress={() => this.renderLedgerListByUserNo(item)}
+                                            >
+                                                <Text style={{ width: width * 0.18, fontSize: 12 }}>{item.termDetailName}</Text>
+                                                <Text style={{ width: width * 0.25, fontSize: 12, textAlign: 'right' }}>
+                                                    {`${numeral(item.totalUnit).format('0,0')}(${numeral(item.percentage).format('0,0')}%)`}
+                                                </Text>
+                                                <Text style={{ width: width * 0.18, fontSize: 12, textAlign: 'right' }}>{numeral(item.break).format('0,0')}</Text>
+                                                <Text style={{ width: width * 0.18, fontSize: 12, textAlign: 'right' }}>{numeral(item.totalWinUnit).format('0,0')}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                        <View style={{ flexDirection: 'row', paddingTop: 4, paddingBottom: 6 }}>
+                                            <Text style={{ width: width * 0.18, fontSize: 12, fontWeight: 'bold' }}>Sub Total</Text>
+                                            <Text style={{ width: width * 0.25, fontSize: 12, fontWeight: 'bold', textAlign: 'right' }}>
+                                                {numeral(g.rows.reduce((s, r) => s + this.toNumber(r.totalUnit), 0)).format('0,0')}
+                                            </Text>
+                                            <Text style={{ width: width * 0.18 }} />
+                                            <Text style={{ width: width * 0.18, fontSize: 12, fontWeight: 'bold', textAlign: 'right' }}>
+                                                {numeral(g.rows.reduce((s, r) => s + this.toNumber(r.totalWinUnit), 0)).format('0,0')}
+                                            </Text>
+                                        </View>
                                     </View>
                                 ))}
                             </ScrollView>
@@ -2548,6 +2915,95 @@ export default class Users extends Component {
                                 <TouchableOpacity
                                     onPress={() => {
                                         const msg = this.buildBreakPShareText()
+                                        if (!msg) {
+                                            Alert.alert(config.AppName, 'No Data!')
+                                            return
+                                        }
+                                        Share.open({ message: msg })
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        height: 40,
+                                        backgroundColor: Color.PRIMARYCOLOR,
+                                        borderRadius: 5,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginLeft: 8,
+                                    }}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>SHARE</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            )}
+            {this.state.showLedgerByUserModal && (
+                <Modal
+                    transparent={true}
+                    animationType="fade"
+                    visible={this.state.showLedgerByUserModal}
+                    onRequestClose={() => this.setState({ showLedgerByUserModal: false })}
+                >
+                    <View style={{ flex: 1, backgroundColor: '#00000066', justifyContent: 'center', alignItems: 'center' }}>
+                        <View style={{ width: width * 0.92, maxHeight: height * 0.85, backgroundColor: '#fff', borderRadius: 8, padding: 12 }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>
+                                {`Ledger - ${this.state.ledgerUserNo || 'All'}`}
+                            </Text>
+                            <Text style={{ fontSize: 13, color: '#333', marginBottom: 8 }}>
+                                {this.state.ledgerTermDetailName || ''}
+                            </Text>
+                            {this.state.ledgerLoading && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                    <ActivityIndicator size='small' color={Color.PRIMARYCOLOR} />
+                                    <Text style={{ marginLeft: 6, fontSize: 12, color: '#333', fontWeight: 'bold' }}>Loading...</Text>
+                                </View>
+                            )}
+                            <View style={{ flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderColor: '#ddd' }}>
+                                <TouchableOpacity style={{ width: width * 0.35 }} onPress={() => this.toggleLedgerSort('num')}>
+                                    <Text style={{ width: width * 0.35, fontWeight: 'bold', fontSize: 14 }}>
+                                        {`Num ${this.state.ledgerSortKey === 'num' ? (this.state.ledgerSortOrder === 'asc' ? '↑' : '↓') : ''}`}
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={{ width: width * 0.35, alignItems: 'flex-end' }} onPress={() => this.toggleLedgerSort('unit')}>
+                                    <Text style={{ width: width * 0.35, fontWeight: 'bold', fontSize: 14, textAlign: 'right' }}>
+                                        {`Unit ${this.state.ledgerSortKey === 'unit' ? (this.state.ledgerSortOrder === 'asc' ? '↑' : '↓') : ''}`}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                            <ScrollView style={{ maxHeight: height * 0.5 }}>
+                                {this.getSortedLedgerRows().map((r, i) => (
+                                    <View key={`r_ledger_${i}`} style={{ flexDirection: 'row', paddingVertical: 7, borderBottomWidth: 1, borderColor: '#f0f0f0' }}>
+                                        <Text style={{ width: width * 0.35, fontSize: 14 }}>{r.num}</Text>
+                                        <Text style={{ width: width * 0.35, fontSize: 14, textAlign: 'right' }}>
+                                            {numeral(r.unit).format('0,0')}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                            <View style={{ flexDirection: 'row', marginTop: 8, borderTopWidth: 1, borderColor: '#ddd', paddingTop: 6 }}>
+                                <Text style={{ width: width * 0.35, fontSize: 15, fontWeight: 'bold' }}>Total Unit</Text>
+                                <Text style={{ width: width * 0.35, fontSize: 15, fontWeight: 'bold', textAlign: 'right' }}>
+                                    {numeral(this.state.ledgerTotalUnit).format('0,0')}
+                                </Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                                <TouchableOpacity
+                                    onPress={() => this.setState({ showLedgerByUserModal: false })}
+                                    style={{
+                                        flex: 1,
+                                        height: 40,
+                                        backgroundColor: '#999',
+                                        borderRadius: 5,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>CLOSE</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        const msg = this.buildLedgerShareText()
                                         if (!msg) {
                                             Alert.alert(config.AppName, 'No Data!')
                                             return

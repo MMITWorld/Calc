@@ -341,8 +341,24 @@ module.exports.getWinReport= function(APIENDPOINT,searchExpression,callback) {
         callback(error, null);
     });
 }
-module.exports.getBreakP= function(APIENDPOINT,TermID,CustomerName,callback) {
-    let url = APIENDPOINT + "api/APIPaymentSummaryWindow?TermID="+TermID+"&CustomerName="+encodeURIComponent(CustomerName)+"&IsBreakP=true"
+module.exports.getBreakP= function(APIENDPOINT,TermID,TermDetailIDOrCustomerName,CustomerNameOrCallback,MaybeCallback) {
+    let TermDetailID = 'All';
+    let CustomerName = '';
+    let callback = null;
+
+    // Backward compatible:
+    // 1) getBreakP(endpoint, termId, customerName, callback)
+    // 2) getBreakP(endpoint, termId, termDetailId, customerName, callback)
+    if(typeof CustomerNameOrCallback === 'function'){
+        CustomerName = TermDetailIDOrCustomerName;
+        callback = CustomerNameOrCallback;
+    }else{
+        TermDetailID = TermDetailIDOrCustomerName == null || TermDetailIDOrCustomerName === '' ? 'All' : TermDetailIDOrCustomerName;
+        CustomerName = CustomerNameOrCallback;
+        callback = MaybeCallback;
+    }
+
+    let url = APIENDPOINT + "api/APIPaymentSummaryWindow?TermID="+TermID+"&TermDetailID="+encodeURIComponent(TermDetailID)+"&CustomerName="+encodeURIComponent(CustomerName)+"&IsBreakP=true"
     console.log('url=======> ',url)
     axios({
         method: 'get',
@@ -639,8 +655,8 @@ module.exports.buyNums = function(APIENDPOINT,UserID,TermDetailID,CName,data, ca
         callback(error, null);
     });
 }
-module.exports.checkSMS = function(APIENDPOINT,UserID,TermDetailID,bodySMS, callback) {
-    var url =APIENDPOINT + "api/APILedger?TermDetailID="+TermDetailID+"&UserID="+UserID;
+module.exports.checkSMS = function(APIENDPOINT,UserID,TermDetailID,selectedUnitPrice,bodySMS, callback) {
+    var url =APIENDPOINT + "api/APILedger?TermDetailID="+TermDetailID+"&UserID="+UserID+"&AdminUnitPrice="+selectedUnitPrice;
 
     console.log("CheckURL"+url)
     console.log("Body Data=========>>>>",JSON.stringify({
@@ -1938,38 +1954,7 @@ module.exports.getUserById = function(APIENDPOINT,UserID, callback) {
         callback(error, null);
     });
 }
-module.exports.checkSMS = function(APIENDPOINT,UserID,TermDetailID,bodySMS, callback) {
-    var url =APIENDPOINT + "api/APILedger?TermDetailID="+TermDetailID+"&UserID="+UserID;
 
-
-    //console.log("Body "+bodySMS)
-
-    var options = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },      
-        body:JSON.stringify({
-            bodySMS:bodySMS
-         }),
-        
-    };;
-    fetch(url, options)
-    .then((response) => response.text())
-    .then((responseText) => {
-        try {
-            callback(null, JSON.parse(responseText));
-        }
-        catch (jsonError) {
-            callback(jsonError, null);
-        }
-
-    })
-    .catch((error) => {
-        callback(error, null);
-    });
-}
 module.exports.setAgent = function(APIENDPOINT,AgentID,AgentName,Prize2D,Prize3D,Discount2D,Discount3D,
     OtherDiscount,Status, callback) {
     let url = APIENDPOINT + "api/apiAgent?Status="+Status+"&Password=admintzt";
