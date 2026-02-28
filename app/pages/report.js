@@ -1084,7 +1084,7 @@ export default class Users extends Component {
         }
         let termDetailID = String(selectedTermDetailID || r.termDetailID || '')
         if (!termDetailID || termDetailID == 'All' || termDetailID == 'all') {
-            Alert.alert(config.AppName, 'Please select Term Detail first!')
+            Alert.alert(config.AppName, 'အပါတ်စဥ်​ရွေးပါ။')
             return
         }
         let lottType = String(r.lottType || '').trim()
