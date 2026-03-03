@@ -11,9 +11,9 @@ import {
   Alert,
   Modal,
   TextInput,
-  AsyncStorage,
   Linking
 } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Color from '../utils/Color.js'
 import dal from '../dal.js'
 import CardView from 'react-native-cardview'

@@ -25,9 +25,9 @@ import {
   Modal,
   Picker,
   ActivityIndicator,
-  Clipboard,
-  AsyncStorage
+  Clipboard
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import TextMarquee from '../components/textmarquee.js'
 import { RecyclerListView, DataProvider, LayoutProvider } from "recyclerlistview";

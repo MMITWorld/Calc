@@ -6,20 +6,20 @@
 
  import React, { Component } from 'react';
  import {
-   Text,
-   StyleSheet,
-   View,
-   Image,
-   TextInput,
-   Dimensions,
-   ScrollView,
-   TouchableOpacity,
-   Button,
-   Alert,
-   AsyncStorage,
-   ActivityIndicator,
-   Picker,
- } from 'react-native';
+  Text,
+  StyleSheet,
+  View,
+  Image,
+  TextInput,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
+  Button,
+  Alert,
+  ActivityIndicator,
+  Picker
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
  import dal from '../dal.js';
  import config from '../config/config'
  import back from "../assets/images/backward.png";

@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, 
-  StyleSheet, 
-  Text, 
+import {
+  Platform,
+  StyleSheet,
+  Text,
   View,
-  TouchableOpacity,  
+  TouchableOpacity,
   FlatList,
   Alert,
   Image,
@@ -12,9 +13,9 @@ import {Platform,
   TextInput,
   ActivityIndicator,
   Picker,
-  PermissionsAndroid,
-  AsyncStorage,
+  PermissionsAndroid
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Share from 'react-native-share';
 import dal from '../dal.js'
 import RNHTMLtoPDF from 'react-native-html-to-pdf';

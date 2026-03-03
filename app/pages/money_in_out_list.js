@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, 
-  StyleSheet, 
-  Text, 
+import {
+  Platform,
+  StyleSheet,
+  Text,
   View,
-  TouchableOpacity,  
+  TouchableOpacity,
   FlatList,
   Alert,
   Image,
@@ -12,9 +13,9 @@ import {Platform,
   TextInput,
   ActivityIndicator,
   Picker,
-  AsyncStorage,
-  DatePickerAndroid,
+  DatePickerAndroid
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import tickImg from '../assets/images/tick.png'
 import untickImg from '../assets/images/untick.png'
 import dal from '../dal.js'

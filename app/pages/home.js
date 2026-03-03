@@ -1,20 +1,20 @@
 import React,{Component} from "react";
-import { 
-    View,
-    Text,
-    Alert,
-    Image,
-    Dimensions,
-    StyleSheet,
-    TouchableOpacity,
-    AsyncStorage,
-    Modal,
-    Linking,
-    ScrollView,
-    ActivityIndicator,
-    Clipboard,
-    Share
-} from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  Image,
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  Linking,
+  ScrollView,
+  ActivityIndicator,
+  Clipboard,
+  Share
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Rabbit = require("rabbit-node");
 
 

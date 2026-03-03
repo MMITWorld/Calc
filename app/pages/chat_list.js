@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  AsyncStorage,
   StyleSheet
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';

@@ -1,26 +1,26 @@
 import React, { Component } from 'react';
 import {
-    Platform,
-    StyleSheet,
-    Text,
-    View,
-    TouchableOpacity,
-    FlatList,
-    Alert,
-    Image,
-    Dimensions,
-    Modal,
-    TextInput,
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Picker,
-    ScrollView,
-    Keyboard,
-    AsyncStorage,
-    Clipboard,
-    Share,
-    DeviceEventEmitter
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+  Alert,
+  Image,
+  Dimensions,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Picker,
+  ScrollView,
+  Keyboard,
+  Clipboard,
+  Share,
+  DeviceEventEmitter
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import dal from '../dal.js'
 import radio_btn_selected from '../assets/images/radio_btn_selected.png'
 import radio_btn_unselected from '../assets/images/radio_btn_unselect.png'

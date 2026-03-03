@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, 
-  StyleSheet, 
-  Text, 
+import {
+  Platform,
+  StyleSheet,
+  Text,
   View,
-  TouchableOpacity,  
+  TouchableOpacity,
   FlatList,
   Alert,
   Image,
@@ -13,9 +14,9 @@ import {Platform,
   ActivityIndicator,
   Picker,
   ScrollView,
-  AsyncStorage,
   Share
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import dal from '../dal.js'
 import numeral from 'numeral';
 import radio_btn_selected from '../assets/images/radio_btn_selected.png'

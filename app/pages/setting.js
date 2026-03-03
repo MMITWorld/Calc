@@ -1,15 +1,15 @@
 import React,{Component} from "react";
-import { 
-    View,
-    Text,
-    Alert,
-    Image,
-    Dimensions,
-    StyleSheet,
-    TouchableOpacity,
-    TextInput,
-    AsyncStorage
-} from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  Image,
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../components/loading.js'
 import Color from '../utils/Color.js';
 import dal from '../dal.js'

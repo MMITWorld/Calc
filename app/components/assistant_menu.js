@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Animated,
   Alert,
-  AsyncStorage,
   DeviceEventEmitter,
   Dimensions,
   Linking,
@@ -16,8 +15,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Color from '../utils/Color.js';
 import numeral from 'numeral';
 import dal from '../dal.js';

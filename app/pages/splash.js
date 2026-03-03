@@ -1,13 +1,13 @@
 import React,{Component} from "react";
-import { 
-    View,
-    Text,
-    Animated,
-    Image,
-    Dimensions,
-    StyleSheet,
-    AsyncStorage
-} from "react-native";
+import {
+  View,
+  Text,
+  Animated,
+  Image,
+  Dimensions,
+  StyleSheet
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import logo from '../assets/images/logo.png'
 let that;
 const { width, height } = Dimensions.get("window");

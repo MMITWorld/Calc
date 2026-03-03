@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, 
-  StyleSheet, 
-  Text, 
+import {
+  Platform,
+  StyleSheet,
+  Text,
   View,
-  TouchableOpacity,  
+  TouchableOpacity,
   FlatList,
   Alert,
   Image,
@@ -12,9 +13,9 @@ import {Platform,
   TextInput,
   ActivityIndicator,
   Picker,
-  ScrollView,
-  AsyncStorage
+  ScrollView
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import dal from '../dal.js'
 import asending from '../assets/images/asending.png'
 import descending from '../assets/images/descending.png'
